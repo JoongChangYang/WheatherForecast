@@ -30,6 +30,10 @@ class ViewController: UIViewController {
         view = weatherView
     }
     
+    override var prefersStatusBarHidden: Bool {
+        true
+    }
+    
     private func setupUI() {
 //        view.addSubview(weatherView)
         
