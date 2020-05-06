@@ -11,7 +11,7 @@ import MapKit
 import Foundation
 
 struct Model {
-    let api = API()
+//    let api = API()
     var current: [CurrentWeather] = []
     var forecast: [ForeCastWeather] = []
 }
