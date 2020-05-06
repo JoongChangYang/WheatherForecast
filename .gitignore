@@ -8,6 +8,12 @@
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 # Carthage/Checkouts
 
+# Personal
+
+AppKey.swift
+
+
+
 Carthage/Build
 
 ### CocoaPods ###
