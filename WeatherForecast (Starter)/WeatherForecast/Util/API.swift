@@ -18,14 +18,19 @@ enum APIResult<Success, Failure> where Failure: Error {
     case failure(Failure)
 }
 
-struct API {
+enum APIError: Error {
+    case badURL
+    case noData
+}
+
+struct APIManager {
     
     let url = "https://apis.openapi.sk.com/weather"
     let key = AppKey.key.rawValue
+//    let group: DispatchGroup
     
     
-    
-    func request(
+    func request (
         latitude: String,
         longitude: String,
         query: WeatherQuery,
@@ -38,23 +43,27 @@ struct API {
         URLQueryItem(name: "lat", value: latitude),
         URLQueryItem(name: "lon", value: longitude)
         ]
-        guard let url = urlComponent?.url else { return }
+        guard let url = urlComponent?.url else {
+            completionHandler(.failure(APIError.badURL))
+            return
+        }
         
         let task = URLSession.shared.dataTask(with: url, completionHandler: {
             (data, response, error) in
             if let error = error {
                 completionHandler(.failure(error))
             }else {
-                guard let data = data else { return }
+                guard let data = data else {
+                    completionHandler(.failure(APIError.noData))
+                    return
+                }
 //                dump(try! JSONSerialization.jsonObject(with: data, options: []))
 //                print(String(data: data, encoding: .utf8))
-                DispatchQueue.main.async {
-                    completionHandler(.success(data))
-                }
+                completionHandler(.success(data))
             }
             })
-        task.resume()
         
+        task.resume()
     }
     
     

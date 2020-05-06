@@ -16,7 +16,6 @@ class ViewController: UIViewController {
     private let locationManager = CLLocationManager()
     private var location: CLLocation?
     private var lastDate = Date(timeIntervalSinceNow: -10)
-    
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -50,15 +49,8 @@ class ViewController: UIViewController {
         
         navigationItem.rightBarButtonItem = barButton
         
-//        weatherView.translatesAutoresizingMaskIntoConstraints = false
-//        weatherView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-//        weatherView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-//        weatherView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-//        weatherView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        
         weatherView.tableView.dataSource = self
         weatherView.tableView.delegate = self
-        
         
     }
     
@@ -105,33 +97,32 @@ class ViewController: UIViewController {
         
         requestCurrentWeather(latitude: latitude, logitude: longitude, group: weatherRequestGroup)
         requestForecast(latitude: latitude, longitude: longitude, group: weatherRequestGroup)
-        
         let workItem = DispatchWorkItem(block: {
             [weak self] in
             self?.weatherView.reloadTableView()
-            print("Finished all requests")
+            print("Finished all request")
         })
-        
         weatherRequestGroup.notify(queue: .main, work: workItem)
     }
     
     
     private func requestCurrentWeather(latitude: String, logitude: String, group: DispatchGroup) {
-        
-        let completionHandler: ((APIResult<Data, Error>) -> Void) = {
-            [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .failure(let error):
-                print(error.localizedDescription)
-            case .success(let data):
-                self.decodingCurrentWeather(data: data)
-            }
-        }
-        
-        
-        
-        model.api.request(latitude: latitude, longitude: logitude, query: .current, completionHandler: completionHandler)
+        group.enter()
+        APIManager().request(
+            latitude: latitude,
+            longitude: logitude,
+            query: .current,
+            completionHandler: {
+                [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .failure(let error):
+                    print(error.localizedDescription)
+                case .success(let data):
+                    self.decodingCurrentWeather(data: data)
+                }
+                group.leave()
+        })
     }
     
     private func decodingCurrentWeather(data: Data) {
@@ -142,28 +133,25 @@ class ViewController: UIViewController {
                 return
         }
         self.model.current = response.currentWeather
-        print("Finised CurrentWeather")
+        print("Finished", #function)
     }
     
     private func requestForecast(latitude: String, longitude: String, group: DispatchGroup) {
-        
-        
-        
-        model.api.request(latitude: latitude, longitude: longitude, query: .forecast, completionHandler: {
+        group.enter()
+        APIManager().request(
+            latitude: latitude,
+            longitude: longitude,
+            query: .forecast,
+            completionHandler: {
             [weak self] result in
             guard let self = self else { return }
-            let resultTask: () -> Void
             switch result {
             case .failure(let error):
-                resultTask = { print(error.localizedDescription) }
-//                DispatchQueue.global().async(group: group, execute: { print(error.localizedDescription) })
-                
+                print(error.localizedDescription)
             case .success(let data):
-                resultTask = { self.decodingForecast(data: data) }
-//                DispatchQueue.global().async(group: group, execute: { self.decodingForecast(data: data) })
+                self.decodingForecast(data: data)
             }
-            DispatchQueue.global().async(group: group, execute: resultTask)
-            
+                group.leave()
         })
     }
     
@@ -203,7 +191,7 @@ class ViewController: UIViewController {
         }
         
         model.forecast = tempWeathers
-        print("Finished ForeCast")
+        print("Finished", #function)
     }
     
     private func setupBackgroundImage(weatherCode: String) {
@@ -233,7 +221,6 @@ class ViewController: UIViewController {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         guard let date = formatter.date(from: responseDate) else { return nil }
         let resultDate = Date(timeInterval: timeInterval, since: date)
-//        print(resultDate)
         return resultDate
     }
     
@@ -313,7 +300,6 @@ extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         guard status == .authorizedWhenInUse else { return }
         configure()
-//        print(locationManager.location?.coordinate)
     }
     
     
@@ -326,17 +312,12 @@ extension ViewController: CLLocationManagerDelegate {
         let latitude = String(location.coordinate.latitude)
         let longitude = String(location.coordinate.longitude)
         let current = Date()
-//        print(locations.last)
-//        print("timeStemp:", lastDate.timeIntervalSince(location.timestamp))
-//        print("current:", lastDate.timeIntervalSince(current))
+        
         if abs(lastDate.timeIntervalSince(current)) > 2 {
-//            print("request")
-//            print(abs(lastDate.timeIntervalSince(location.timestamp)))
-             request(latitude: latitude, longitude: longitude)
-             lastDate = current
-//            print("------------------------------------------------------------------------------")
+            request(latitude: latitude, longitude: longitude)
+            lastDate = current
         }
-       
+        
         
     }
     
