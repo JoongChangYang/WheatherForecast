@@ -16,7 +16,6 @@ class ViewController: UIViewController {
     private let locationManager = CLLocationManager()
     private var location: CLLocation?
     private var lastDate = Date(timeIntervalSinceNow: -10)
-    private var bool = false
     
 
   override func viewDidLoad() {
@@ -102,25 +101,37 @@ class ViewController: UIViewController {
     }
     
     private func request(latitude: String, longitude: String) {
-//        print("request")
-        requestCurrentWeather(latitude: latitude, logitude: longitude)
-        requestForecast(latitude: latitude, longitude: longitude)
+        let weatherRequestGroup = DispatchGroup()
+        
+        requestCurrentWeather(latitude: latitude, logitude: longitude, group: weatherRequestGroup)
+        requestForecast(latitude: latitude, longitude: longitude, group: weatherRequestGroup)
+        
+        let workItem = DispatchWorkItem(block: {
+            [weak self] in
+            self?.weatherView.reloadTableView()
+            print("Finished all requests")
+        })
+        
+        weatherRequestGroup.notify(queue: .main, work: workItem)
     }
     
     
-    private func requestCurrentWeather(latitude: String, logitude: String) {
-        model.api.request(latitude: latitude, longitude: logitude, query: .current, completionHandler: {
+    private func requestCurrentWeather(latitude: String, logitude: String, group: DispatchGroup) {
+        
+        let completionHandler: ((APIResult<Data, Error>) -> Void) = {
             [weak self] result in
             guard let self = self else { return }
-            
             switch result {
             case .failure(let error):
                 print(error.localizedDescription)
             case .success(let data):
                 self.decodingCurrentWeather(data: data)
             }
-            
-        })
+        }
+        
+        
+        
+        model.api.request(latitude: latitude, longitude: logitude, query: .current, completionHandler: completionHandler)
     }
     
     private func decodingCurrentWeather(data: Data) {
@@ -131,24 +142,27 @@ class ViewController: UIViewController {
                 return
         }
         self.model.current = response.currentWeather
-        
-        if self.bool {
-            self.weatherView.reloadTableView()
-        }else {
-            self.bool = true
-        }
+        print("Finised CurrentWeather")
     }
     
-    private func requestForecast(latitude: String, longitude: String) {
+    private func requestForecast(latitude: String, longitude: String, group: DispatchGroup) {
+        
+        
+        
         model.api.request(latitude: latitude, longitude: longitude, query: .forecast, completionHandler: {
             [weak self] result in
             guard let self = self else { return }
+            let resultTask: () -> Void
             switch result {
             case .failure(let error):
-                print(error.localizedDescription)
+                resultTask = { print(error.localizedDescription) }
+//                DispatchQueue.global().async(group: group, execute: { print(error.localizedDescription) })
+                
             case .success(let data):
-                self.decodingForecast(data: data)
+                resultTask = { self.decodingForecast(data: data) }
+//                DispatchQueue.global().async(group: group, execute: { self.decodingForecast(data: data) })
             }
+            DispatchQueue.global().async(group: group, execute: resultTask)
             
         })
     }
@@ -161,26 +175,7 @@ class ViewController: UIViewController {
                 return
         }
             sortedDatas(weathers: result)
-    }
-    
-    private func setupBackgroundImage(weatherCode: String) {
         
-        guard let codeNumber = Int(weatherCode.replacingOccurrences(of: "SKY_O", with: "")) else { return }
-        var imageName = ""
-        
-        switch codeNumber {
-        case 1, 2:
-            imageName = "sunny"
-        case 3, 7:
-            imageName = "cloudy"
-        case (4...6), (8...10):
-            imageName = "rainy"
-        case (11...14):
-            imageName = "lightning"
-        default:
-            return
-        }
-        weatherView.backgroundImageView.image = UIImage(named: imageName)
     }
     
     private func sortedDatas(weathers: ForeCastWeathers) {
@@ -208,13 +203,27 @@ class ViewController: UIViewController {
         }
         
         model.forecast = tempWeathers
-        if bool {
-            weatherView.reloadTableView()
-        }else {
-            bool = true
-        }
+        print("Finished ForeCast")
+    }
+    
+    private func setupBackgroundImage(weatherCode: String) {
         
-//        dump(model.forecast)
+        guard let codeNumber = Int(weatherCode.replacingOccurrences(of: "SKY_O", with: "")) else { return }
+        var imageName = ""
+        
+        switch codeNumber {
+        case 1, 2:
+            imageName = "sunny"
+        case 3, 7:
+            imageName = "cloudy"
+        case (4...6), (8...10):
+            imageName = "rainy"
+        case (11...14):
+            imageName = "lightning"
+        default:
+            return
+        }
+        weatherView.backgroundImageView.image = UIImage(named: imageName)
     }
     
     private func makeDate(responseDate: String, interval: Int) -> Date?{
@@ -321,7 +330,6 @@ extension ViewController: CLLocationManagerDelegate {
 //        print("timeStemp:", lastDate.timeIntervalSince(location.timestamp))
 //        print("current:", lastDate.timeIntervalSince(current))
         if abs(lastDate.timeIntervalSince(current)) > 2 {
-            bool = false
 //            print("request")
 //            print(abs(lastDate.timeIntervalSince(location.timestamp)))
              request(latitude: latitude, longitude: longitude)
