@@ -21,7 +21,7 @@ enum APIResult<Success, Failure> where Failure: Error {
 struct API {
     
     let url = "https://apis.openapi.sk.com/weather"
-    let key = "l7xxedccea1442a042a78d31018e0cc04c10"
+    let key = AppKey.key.rawValue
     
     
     
@@ -46,7 +46,7 @@ struct API {
                 completionHandler(.failure(error))
             }else {
                 guard let data = data else { return }
-                dump(try! JSONSerialization.jsonObject(with: data, options: []))
+//                dump(try! JSONSerialization.jsonObject(with: data, options: []))
 //                print(String(data: data, encoding: .utf8))
                 DispatchQueue.main.async {
                     completionHandler(.success(data))
