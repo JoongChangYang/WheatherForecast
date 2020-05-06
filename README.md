@@ -10,9 +10,19 @@
 
 
 
+## Sample clip
+
+[sample clip](https://github.com/JoongChangYang/WeatherForecast/tree/master/Accets/WeatherForecast.gif)
+
+
+
 
 
 ## Trouble Shooting
 
 - 현재 날씨, 단기예보 두개의 다른 request 보내고 response를 받는 과정에서 UI를 업데이트하는 시점의 문제
   	- SK Weather Planet Open API 구조상 현재날씨와 단기예보의 request를 따로 보내야 하는데 어떤 request가 먼저 끝날지 알 수 없기때문에 UI를 업데이트하는 시점이 정확하지 않음
+  	- DispatchGroup의 notify 함수를 이용하여 두개의 request가 정상적으로 종료되면 안전하게 UI를 업데이트하게 함.
+
+
+
