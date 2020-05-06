@@ -12,7 +12,7 @@
 
 ## Sample clip
 
-![sample clip](https://github.com/JoongChangYang/WeatherForecast/tree/master/Accets/WeatherForecast.gif)
+<img src="https://github.com/JoongChangYang/WeatherForecast/blob/master/Accets/WeatherForecast.gif"></img>
 
 
 
