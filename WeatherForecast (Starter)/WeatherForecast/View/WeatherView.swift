@@ -34,6 +34,7 @@ class WeatherView: UIView {
         addSubViews(views: [backgroundImageView, tableView])
         backgroundImageView.addSubview(blurEffectView)
         
+        tableView.showsVerticalScrollIndicator = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
