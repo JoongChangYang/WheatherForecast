@@ -14,7 +14,7 @@
 
 - language: Swift
 - Frame Work: UIKit, CoreLocation
-- Open API: ***SK Weather Planet Open API***
+- Open API: SK Weather Planet Open API
 
 
 
@@ -24,7 +24,7 @@
 
 - `CLLocationManager` class 를 이용하여 디바이스의 위치 정보 권한을 확인하고 권한이 없는 경우 요청
 - 위치 정보에 대한 권한이 있으면 현재 위치 정보를 가지고 현재 위치의 날씨 정보를 요청
-- 응답 받은 날씨 정보의 JSON data를 `Codable`을 이용하여 파싱 후 `View`  업데이트 
+- 응답 받은 날씨 정보의 JSON data를 `Codable`을 이용하여 파싱 후 UI  업데이트 
 
 
 
