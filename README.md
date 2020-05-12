@@ -12,12 +12,12 @@
 - 단기 예보: 현재 시간으로 부터 3시간 간격으로 67시간 까지의 날씨 예보를 제공합니다.
 
 
-
+​      
 ## Using skill
 
 - language: Swift
 - Frame Work: UIKit, CoreLocation
-- Reference: SK Weather Planet Open API
+- Open API: SK Weather Planet Open API
 
 
 
