@@ -23,7 +23,7 @@
 
 ## Implementation
 
-<img src="https://github.com/JoongChangYang/WeatherForecast/blob/master/Accets/WeatherForecast.gif"></img>
+<img src="Accets/WeatherForecast.gif"></img>
 
 - `CLLocationManager` class 를 이용하여 디바이스의 위치 정보 권한을 확인하고 권한이 없는 경우 요청
 - 위치 정보에 대한 권한이 있으면 현재 위치 정보를 가지고 현재 위치의 날씨 정보를 요청
